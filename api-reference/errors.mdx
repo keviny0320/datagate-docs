@@ -1,0 +1,83 @@
+---
+title: Errors
+description: "Error response format and status codes"
+---
+
+## Error Format
+
+Every error response has the same shape:
+
+```json
+{"error": "human-readable message"}
+```
+
+## Status Codes
+
+| Code | Name | Description |
+|------|------|-------------|
+| `400` | Validation Error | Bad input — message is specific (e.g., `"name is required"`) |
+| `401` | Authentication Error | Invalid or missing API key / access token |
+| `402` | Insufficient Balance | Balance too low for the query — includes extra fields |
+| `403` | Forbidden | Wrong role or not authorized |
+| `404` | Not Found | Resource doesn't exist |
+| `409` | Conflict | Duplicate resource |
+| `500` | Server Error | Internal error (generic message) |
+
+## 402 Insufficient Balance
+
+The 402 response includes your current balance and the estimated cost:
+
+```json
+{
+  "error": "insufficient balance",
+  "balance": "0.50000000",
+  "estimated_cost": "1.00000000"
+}
+```
+
+## Handling Errors
+
+<CodeGroup>
+
+```python Python
+from datagate import (
+    DatagateError,
+    AuthenticationError,
+    InsufficientBalanceError,
+    ValidationError,
+)
+
+try:
+    response = await client.query(text="...", dataset_ids=["..."])
+except InsufficientBalanceError as e:
+    print(f"Need ${e.estimated_cost}, have ${e.balance}")
+except AuthenticationError:
+    print("Check your API key")
+except ValidationError as e:
+    print(f"Bad request: {e.message}")
+except DatagateError as e:
+    print(f"Error {e.status_code}: {e.message}")
+```
+
+```typescript TypeScript
+import {
+  DatagateError,
+  AuthenticationError,
+  InsufficientBalanceError,
+  ValidationError,
+} from "datagate";
+
+try {
+  const response = await client.query({ text: "...", datasetIds: ["..."] });
+} catch (err) {
+  if (err instanceof InsufficientBalanceError) {
+    console.error(`Need $${err.estimatedCost}, have $${err.balance}`);
+  } else if (err instanceof AuthenticationError) {
+    console.error("Check your API key");
+  } else if (err instanceof DatagateError) {
+    console.error(`Error ${err.statusCode}: ${err.message}`);
+  }
+}
+```
+
+</CodeGroup>

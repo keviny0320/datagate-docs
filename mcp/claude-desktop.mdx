@@ -1,0 +1,50 @@
+---
+title: Claude Desktop
+description: "Set up Datagate MCP in Claude Desktop"
+---
+
+Add the following to your Claude Desktop config file:
+
+**macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
+**Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
+
+## Python
+
+```json
+{
+  "mcpServers": {
+    "datagate": {
+      "command": "uvx",
+      "args": ["datagate-mcp"],
+      "env": {
+        "DATAGATE_API_KEY": "dg_live_your_key_here"
+      }
+    }
+  }
+}
+```
+
+## TypeScript
+
+```json
+{
+  "mcpServers": {
+    "datagate": {
+      "command": "npx",
+      "args": ["-y", "@datagate/mcp"],
+      "env": {
+        "DATAGATE_API_KEY": "dg_live_your_key_here"
+      }
+    }
+  }
+}
+```
+
+## Configuration
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `DATAGATE_API_KEY` | Yes | — | Your API key (`dg_live_...`) |
+| `DATAGATE_URL` | No | `https://api.datagate.dev` | API base URL |
+
+After saving the config, restart Claude Desktop. You should see the Datagate tools available in your conversation.

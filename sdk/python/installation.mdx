@@ -1,0 +1,46 @@
+---
+title: Python Installation
+description: "Install the Datagate Python SDK"
+---
+
+## Requirements
+
+- Python 3.10+
+
+## Install
+
+```bash
+pip install datagate
+```
+
+## Dependencies
+
+The SDK has one dependency: [httpx](https://www.python-httpx.org/) for async HTTP.
+
+## Create a Client
+
+```python
+from datagate import DatagateClient
+
+# With API key (recommended)
+client = DatagateClient(api_key="dg_live_...")
+
+# With JWT access token
+client = DatagateClient(access_token="eyJ...")
+
+# With custom base URL (for local development)
+client = DatagateClient(
+    api_key="dg_live_...",
+    base_url="http://localhost:8080",
+)
+```
+
+### Context Manager
+
+The client supports async context manager for automatic cleanup:
+
+```python
+async with DatagateClient(api_key="dg_live_...") as client:
+    datasets = await client.list_datasets()
+    # client.close() is called automatically
+```

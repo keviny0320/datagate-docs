@@ -1,0 +1,90 @@
+---
+title: Custom Agents
+description: "Use Datagate MCP in your own agent code"
+---
+
+## Python Agent
+
+```python
+from mcp import ClientSession, StdioServerParameters
+from mcp.client.stdio import stdio_client
+
+server_params = StdioServerParameters(
+    command="datagate-mcp",
+    env={"DATAGATE_API_KEY": "dg_live_..."}
+)
+
+async with stdio_client(server_params) as (read, write):
+    async with ClientSession(read, write) as session:
+        await session.initialize()
+
+        # Discover datasets
+        datasets = await session.call_tool("list_datasets", {})
+        print(datasets)
+
+        # Query
+        result = await session.call_tool("query", {
+            "dataset_ids": ["uuid-1"],
+            "text": "machine learning transformers",
+            "top_k": 5,
+        })
+        print(result)
+```
+
+## TypeScript Agent
+
+```typescript
+import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
+
+const transport = new StdioClientTransport({
+  command: "npx",
+  args: ["-y", "@datagate/mcp"],
+  env: { DATAGATE_API_KEY: "dg_live_..." },
+});
+
+const client = new Client({ name: "my-agent", version: "1.0.0" });
+await client.connect(transport);
+
+// Discover tools
+const tools = await client.listTools();
+console.log(tools);
+
+// List datasets
+const datasets = await client.callTool({
+  name: "list_datasets",
+  arguments: {},
+});
+
+// Query
+const results = await client.callTool({
+  name: "query",
+  arguments: {
+    dataset_ids: ["uuid-1"],
+    text: "machine learning transformers",
+    top_k: 5,
+  },
+});
+```
+
+## When to Use MCP vs SDK Directly
+
+If you're building a custom agent and want full control over the response format (typed objects, error handling), consider using the SDK directly instead of MCP:
+
+<CodeGroup>
+
+```python SDK (recommended for custom agents)
+from datagate import DatagateClient
+
+client = DatagateClient(api_key="dg_live_...")
+datasets = await client.list_datasets()  # returns list[Dataset]
+response = await client.query(text="...", dataset_ids=["..."])  # returns QueryResponse
+```
+
+```python MCP (best for agent frameworks)
+result = await session.call_tool("list_datasets", {})  # returns formatted text
+```
+
+</CodeGroup>
+
+MCP is ideal when your agent framework handles tool discovery and invocation. The SDK is better when you want typed responses and programmatic control.

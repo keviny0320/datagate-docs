@@ -1,0 +1,73 @@
+---
+title: Multi-Dataset Queries
+description: "Query across multiple datasets with different embedding models"
+---
+
+## Querying Multiple Datasets
+
+Pass multiple dataset IDs to search across them in a single call:
+
+```python
+response = await client.query(
+    text="transformer architectures",
+    dataset_ids=["papers-ds", "patents-ds", "news-ds"],
+    top_k=20,
+)
+```
+
+Datagate fans out to all datasets in parallel and merges the results.
+
+## Single-Model vs Multi-Model
+
+### Same embedding model
+
+When all datasets use the same model (e.g., `text-embedding-3-small`):
+
+- Query text is embedded **once**
+- Results are ranked by **raw similarity score** (0–1, higher = more relevant)
+- Scores are directly comparable across datasets
+
+### Different embedding models
+
+When datasets use different models (e.g., one uses `text-embedding-3-small`, another uses `embed-v4.0`):
+
+- Query text is embedded **once per unique model** (in parallel)
+- Results are ranked by **Reciprocal Rank Fusion (RRF)**
+- RRF uses `1/(k + rank)` where rank is the result's position within its dataset
+- This is fair across models because it only considers rank order, not raw scores
+
+You don't need to handle this — it's automatic. The `embedding_model` field appears on results only in multi-model queries so you can see which model produced each result.
+
+## Partial Failures
+
+If one dataset's vector DB is unreachable, the other datasets still return results. Check `response.warnings` for details:
+
+```python
+response = await client.query(
+    text="search query",
+    dataset_ids=["ds-1", "ds-2", "ds-3"],
+)
+
+if response.warnings:
+    for warning in response.warnings:
+        print(f"Warning: {warning}")
+
+# Results from successful datasets are still returned
+for result in response.results:
+    print(f"[{result.score:.4f}] {result.dataset_id}: {result.metadata}")
+```
+
+## Pre-Computed Vectors
+
+When using `vector` instead of `text`:
+
+- **All datasets must use the same embedding model** — the server can't split a single vector across different models (returns 400 if they differ)
+- Vector dimension must match the model's expected dimension
+
+```python
+# Only works if both datasets use the same model
+response = await client.query(
+    vector=[0.012, -0.034, ...],
+    dataset_ids=["ds-1", "ds-2"],
+)
+```

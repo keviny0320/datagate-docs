@@ -1,0 +1,125 @@
+---
+title: Metadata Filters
+description: "Filter query results using MongoDB-style operators"
+---
+
+## Overview
+
+Each dataset can declare a `metadata_schema` — a list of fields available for filtering. Use `list_datasets()` to see what's filterable:
+
+```python
+datasets = await client.list_datasets()
+for ds in datasets:
+    if ds.metadata_schema:
+        for field in ds.metadata_schema:
+            print(f"  {field['name']} ({field['type']}): {field.get('description', '')}")
+```
+
+## Filter Syntax
+
+Filters map each dataset ID to a filter object. Datasets without an entry are queried unfiltered.
+
+```python
+filters={
+    "ds-aaa": {"year": {"$gte": 2023}},          # filter ds-aaa
+    "ds-bbb": {"category": {"$eq": "research"}},  # filter ds-bbb
+    # ds-ccc has no entry — queried unfiltered
+}
+```
+
+## Operators
+
+### Comparison
+
+| Operator | Description | Example |
+|----------|-------------|---------|
+| `$eq` | Equals | `{"status": {"$eq": "published"}}` |
+| `$ne` | Not equals | `{"status": {"$ne": "draft"}}` |
+| `$gt` | Greater than | `{"score": {"$gt": 0.5}}` |
+| `$gte` | Greater or equal | `{"year": {"$gte": 2020}}` |
+| `$lt` | Less than | `{"price": {"$lt": 100}}` |
+| `$lte` | Less or equal | `{"year": {"$lte": 2024}}` |
+| `$in` | In array | `{"status": {"$in": ["published", "reviewed"]}}` |
+
+### Logical
+
+| Operator | Description | Example |
+|----------|-------------|---------|
+| `$and` | All conditions must match | `{"$and": [{...}, {...}]}` |
+| `$or` | Any condition must match | `{"$or": [{...}, {...}]}` |
+
+## Rules
+
+- Each field has exactly **one** operator: `{"field": {"$op": value}}`
+- Top-level fields are implicitly ANDed
+- Max nesting depth: **3 levels**
+- Max conditions: **20 per dataset**
+- Field names must not start with `_` or `$`
+
+## Examples
+
+### Simple filter
+
+```python
+filters={"ds-1": {"year": {"$gte": 2023}}}
+```
+
+### Multiple fields (implicit AND)
+
+```python
+filters={
+    "ds-1": {
+        "year": {"$gte": 2023},
+        "category": {"$eq": "research"},
+    }
+}
+```
+
+### Explicit AND
+
+```python
+filters={
+    "ds-1": {
+        "$and": [
+            {"year": {"$gte": 2023}},
+            {"category": {"$eq": "research"}},
+        ]
+    }
+}
+```
+
+### OR
+
+```python
+filters={
+    "ds-1": {
+        "$or": [
+            {"category": {"$eq": "research"}},
+            {"category": {"$eq": "review"}},
+        ]
+    }
+}
+```
+
+### Cross-dataset (different filters per dataset)
+
+```python
+response = await client.query(
+    text="neural networks",
+    dataset_ids=["papers", "patents", "news"],
+    filters={
+        "papers": {"year": {"$gte": 2022}, "peer_reviewed": {"$eq": True}},
+        "patents": {"filed_after": {"$gte": "2023-01-01"}},
+        # "news" has no entry — queried unfiltered
+    },
+)
+```
+
+## Schema Field Types
+
+| Type | Description | Filter operators |
+|------|-------------|-----------------|
+| `string` | Text value | `$eq`, `$ne`, `$in` |
+| `number` | Numeric value | All comparison + `$in` |
+| `boolean` | True/false | `$eq`, `$ne` |
+| `string[]` | Array of strings | `$in` |

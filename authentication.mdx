@@ -1,0 +1,64 @@
+---
+title: Authentication
+description: "API keys and JWT access tokens"
+---
+
+## API Key (recommended)
+
+Generate an API key from the [Datagate dashboard](https://platform.datagate.dev). Keys start with `dg_live_` and are shown once — store it securely.
+
+<CodeGroup>
+
+```python Python
+from datagate import DatagateClient
+
+client = DatagateClient(api_key="dg_live_...")
+```
+
+```typescript TypeScript
+import { DatagateClient } from "datagate";
+
+const client = new DatagateClient({ apiKey: "dg_live_..." });
+```
+
+```bash curl
+curl -H "Authorization: Bearer dg_live_..." \
+  https://api.datagate.dev/v1/datasets/discover
+```
+
+</CodeGroup>
+
+## JWT Access Token
+
+If you authenticate via the login flow (email + 2FA), you receive a 15-minute JWT access token. This is primarily used by the dashboard, but SDKs accept it too:
+
+<CodeGroup>
+
+```python Python
+client = DatagateClient(access_token="eyJhbGciOiJIUzI1NiJ9...")
+```
+
+```typescript TypeScript
+const client = new DatagateClient({ accessToken: "eyJhbGciOiJIUzI1NiJ9..." });
+```
+
+</CodeGroup>
+
+Both methods use the same `Authorization: Bearer <credential>` header. The SDK does not handle login or token refresh — the caller provides a valid credential.
+
+## Key Management
+
+| Action | Endpoint | Notes |
+|--------|----------|-------|
+| Generate/rotate | `POST /v1/auth/api-keys` | Replaces any existing key. Raw key shown once. |
+| Revoke | `DELETE /v1/auth/api-keys` | Deletes key, no replacement. |
+
+Manage your API key from the dashboard under **API Keys**.
+
+## Environment Variables
+
+For MCP servers and CI/CD, set your key as an environment variable:
+
+```bash
+export DATAGATE_API_KEY="dg_live_..."
+```

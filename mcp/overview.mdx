@@ -1,0 +1,52 @@
+---
+title: MCP Overview
+description: "Connect Datagate to AI agents via Model Context Protocol"
+---
+
+## What is MCP?
+
+[Model Context Protocol (MCP)](https://modelcontextprotocol.io) is an open standard that lets AI agents discover and call external tools. Datagate provides MCP servers that expose dataset discovery and querying as tools — no integration code needed.
+
+## When to use MCP vs SDK
+
+| Use case | Use |
+|----------|-----|
+| Claude Desktop, Claude Code, or any MCP-compatible agent | **MCP server** |
+| Custom Python/TypeScript application | **SDK** |
+| Building your own agent framework | **SDK** (or MCP if your framework supports it) |
+
+## Available Packages
+
+| Package | Language | Install | Run |
+|---------|----------|---------|-----|
+| `datagate-mcp` | Python | `pip install datagate-mcp` | `uvx datagate-mcp` |
+| `@datagate/mcp` | TypeScript | `npm install @datagate/mcp` | `npx -y @datagate/mcp` |
+
+Both expose the same two tools and produce identical output.
+
+## Tools Exposed
+
+### list_datasets
+
+Calls `GET /v1/datasets/discover`. Returns all visible datasets with:
+- Name, ID, seller, description
+- Price per chunk
+- Queryable/subscribed status
+- Metadata schema (available filter fields)
+
+### query
+
+Calls `POST /v1/query`. Parameters:
+- `dataset_ids` (required) — which datasets to search
+- `text` (required) — natural language query
+- `top_k` (optional, default 10) — max results
+- `filters` (optional) — per-dataset metadata filters
+
+## How an Agent Uses It
+
+1. Agent starts → spawns MCP server → discovers `list_datasets` and `query` tools
+2. User asks "What datasets are available?" → agent calls `list_datasets`
+3. User asks "Find privacy policy precedents" → agent calls `query` with dataset IDs and text, using metadata filters from step 2
+4. Agent reads results and summarizes for the user
+
+The MCP server always queries with text — Datagate handles embedding and multi-model orchestration automatically.

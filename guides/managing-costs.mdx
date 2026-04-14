@@ -1,0 +1,60 @@
+---
+title: Managing Costs
+description: "Pricing model, balance management, and auto-deposit"
+---
+
+## How Pricing Works
+
+- Each dataset has a **price per chunk** (e.g., `$0.001`)
+- A small **platform fee** is added per chunk
+- You're charged for each result **actually returned**, not the `top_k` estimate
+- Cost = `chunk_count × (price_per_chunk + platform_fee)` per dataset
+
+### Cost Estimation
+
+Before a query executes, Datagate checks your balance against the **max possible cost** (topK × price per dataset). If your balance is too low, you get a `402 Insufficient Balance` error with your current balance and the estimated cost.
+
+## Deposits
+
+Add funds via Stripe Checkout from the [dashboard](https://platform.datagate.dev):
+
+1. Go to **Billing** → **Deposit**
+2. Enter amount and complete Stripe Checkout
+3. Funds are credited immediately after payment
+
+## Auto-Deposit
+
+Configure automatic refills so your agent never runs out of balance:
+
+1. Go to **Billing** → **Auto-Deposit** in the dashboard
+2. Set a **threshold** (e.g., $5.00) — when balance drops below this, auto-refill triggers
+3. Set a **refill amount** (e.g., $25.00) — how much to deposit
+4. Requires a saved payment method (set up during your first deposit)
+
+Auto-deposit triggers after each query if your balance dropped below the threshold. It uses your saved card with off-session payment consent.
+
+## Monitoring Balance
+
+Check your balance from the dashboard or programmatically via the API:
+
+```bash
+curl -H "Authorization: Bearer dg_live_..." \
+  https://api.datagate.dev/v1/billing/buyer-balance
+```
+
+Response:
+```json
+{
+  "balance": "24.50000000",
+  "total_deposited": "100.00000000",
+  "total_spent": "75.50000000",
+  "currency": "USD"
+}
+```
+
+## Tips for Cost Management
+
+- Use **lower `top_k`** values when you don't need many results (default is 10)
+- Use **metadata filters** to narrow results — fewer irrelevant chunks = lower cost
+- Set up **auto-deposit** with a comfortable threshold for unattended agents
+- Check `price_per_chunk` in `list_datasets()` to understand per-dataset pricing before querying

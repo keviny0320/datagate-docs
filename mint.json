@@ -1,0 +1,86 @@
+{
+  "$schema": "https://mintlify.com/schema.json",
+  "name": "Datagate",
+  "logo": {
+    "dark": "/logo/dark.svg",
+    "light": "/logo/light.svg"
+  },
+  "favicon": "/favicon.svg",
+  "colors": {
+    "primary": "#6366F1",
+    "light": "#818CF8",
+    "dark": "#4F46E5"
+  },
+  "topbarLinks": [
+    {
+      "name": "Dashboard",
+      "url": "https://platform.datagate.dev"
+    }
+  ],
+  "topbarCtaButton": {
+    "name": "Get API Key",
+    "url": "https://platform.datagate.dev"
+  },
+  "tabs": [
+    {
+      "name": "API Reference",
+      "url": "api-reference"
+    }
+  ],
+  "navigation": [
+    {
+      "group": "Getting Started",
+      "pages": [
+        "introduction",
+        "quickstart",
+        "authentication",
+        "concepts"
+      ]
+    },
+    {
+      "group": "Python SDK",
+      "pages": [
+        "sdk/python/installation",
+        "sdk/python/usage"
+      ]
+    },
+    {
+      "group": "TypeScript SDK",
+      "pages": [
+        "sdk/typescript/installation",
+        "sdk/typescript/usage"
+      ]
+    },
+    {
+      "group": "MCP Integration",
+      "pages": [
+        "mcp/overview",
+        "mcp/claude-desktop",
+        "mcp/claude-code",
+        "mcp/custom-agents"
+      ]
+    },
+    {
+      "group": "Guides",
+      "pages": [
+        "guides/metadata-filters",
+        "guides/multi-dataset-queries",
+        "guides/managing-costs"
+      ]
+    },
+    {
+      "group": "API Reference",
+      "pages": [
+        "api-reference/overview",
+        "api-reference/authentication",
+        "api-reference/datasets",
+        "api-reference/query",
+        "api-reference/billing",
+        "api-reference/errors"
+      ]
+    }
+  ],
+  "footerSocials": {
+    "github": "https://github.com/kevinyu"
+  }
+}

@@ -1,0 +1,140 @@
+---
+title: TypeScript Usage
+description: "listDatasets() and query() — the two SDK methods"
+---
+
+## listDatasets()
+
+Discover all datasets visible to you — public datasets plus any private datasets you've been granted access to.
+
+```typescript
+const datasets = await client.listDatasets();
+
+for (const ds of datasets) {
+  console.log(`${ds.name} (ID: ${ds.id})`);
+  console.log(`  Price: ${ds.price_per_chunk} ${ds.currency}/chunk`);
+  console.log(`  Queryable: ${ds.queryable}`);
+  console.log(`  Subscribed: ${ds.subscribed}`);
+}
+```
+
+### Dataset Interface
+
+```typescript
+interface Dataset {
+  id: string;
+  seller_name: string;
+  name: string;
+  description: string;
+  price_per_chunk: string;     // "0.00100000"
+  currency: string;
+  visibility: "public" | "private";
+  metadata_schema: { name: string; type: string; description?: string }[] | null;
+  queryable: boolean;
+  subscribed: boolean;
+  created_at: string;
+  updated_at: string;
+}
+```
+
+## query()
+
+Search across one or more datasets. Provide either `text` or `vector`.
+
+### Text query (recommended)
+
+```typescript
+const response = await client.query({
+  text: "machine learning transformers",
+  datasetIds: ["uuid-1", "uuid-2"],
+  topK: 10,
+});
+
+console.log(`Query ID: ${response.query_id}`);
+for (const result of response.results) {
+  console.log(`[${result.score.toFixed(4)}]`, result.metadata);
+}
+```
+
+### Pre-computed vector
+
+```typescript
+const response = await client.query({
+  vector: [0.012, -0.034, 0.056],
+  datasetIds: ["uuid-1"],
+  topK: 10,
+});
+```
+
+### With metadata filters
+
+```typescript
+const response = await client.query({
+  text: "privacy regulations",
+  datasetIds: ["ds-aaa", "ds-bbb"],
+  filters: {
+    "ds-aaa": { year: { $gte: 2023 } },
+    "ds-bbb": {
+      $and: [
+        { category: { $eq: "legal" } },
+        { status: { $in: ["published", "reviewed"] } },
+      ],
+    },
+  },
+});
+```
+
+See [Metadata Filters](/guides/metadata-filters) for the full filter syntax.
+
+### Response Interface
+
+```typescript
+interface QueryResponse {
+  query_id: string;
+  results: QueryResult[];
+  warnings: string[];
+}
+
+interface QueryResult {
+  dataset_id: string;
+  id: string;
+  score: number;
+  metadata: Record<string, unknown>;
+  embedding_model?: string;   // only in multi-model queries
+}
+```
+
+## Error Handling
+
+```typescript
+import {
+  DatagateClient,
+  DatagateError,
+  AuthenticationError,
+  InsufficientBalanceError,
+  ValidationError,
+} from "datagate";
+
+try {
+  const response = await client.query({ text: "...", datasetIds: ["..."] });
+} catch (err) {
+  if (err instanceof AuthenticationError) {
+    console.error("Invalid API key");
+  } else if (err instanceof InsufficientBalanceError) {
+    console.error(`Balance: ${err.balance}, need: ${err.estimatedCost}`);
+  } else if (err instanceof ValidationError) {
+    console.error(`Bad request: ${err.message}`);
+  } else if (err instanceof DatagateError) {
+    console.error(`API error (${err.statusCode}): ${err.message}`);
+  }
+}
+```
+
+| Error Class | Status | When |
+|-------------|--------|------|
+| `ValidationError` | 400 | Bad input |
+| `AuthenticationError` | 401 | Invalid credential |
+| `InsufficientBalanceError` | 402 | Balance too low |
+| `ForbiddenError` | 403 | Wrong role |
+| `NotFoundError` | 404 | Resource not found |
+| `ServerError` | 500 | Server error |

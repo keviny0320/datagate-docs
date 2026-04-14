@@ -1,0 +1,43 @@
+---
+title: Introduction
+description: "Query premium datasets from your AI agents and applications"
+---
+
+# What is Datagate?
+
+Datagate is a data marketplace that connects AI agents to premium datasets. Sellers publish vector-indexed datasets, and buyers query across them via a single API call.
+
+**For AI agent builders**, Datagate provides:
+
+- **One API** to search across multiple sellers' datasets simultaneously
+- **Automatic embedding** — send natural language, the server handles vectorization
+- **Cross-model search** — query datasets using different embedding models in a single call
+- **Metadata filtering** — filter results per-dataset using MongoDB-style operators
+- **Pay-per-chunk pricing** — only pay for the results you receive
+
+## How it works
+
+```
+Your Agent → POST /v1/query → Datagate → Fan-out to seller vector DBs → Merge & rank → Results
+```
+
+1. **Discover** datasets with `list_datasets()` — see what's available, pricing, and filterable fields
+2. **Query** with `query()` — send natural language text, get ranked results with metadata
+3. **Pay per chunk** — each result chunk is billed at the dataset's price (typically fractions of a cent)
+
+## Get started
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="bolt" href="/quickstart">
+    First query in under 5 minutes
+  </Card>
+  <Card title="Python SDK" icon="python" href="/sdk/python/installation">
+    pip install datagate
+  </Card>
+  <Card title="TypeScript SDK" icon="js" href="/sdk/typescript/installation">
+    npm install datagate
+  </Card>
+  <Card title="MCP Integration" icon="robot" href="/mcp/overview">
+    Connect to Claude Desktop or Claude Code
+  </Card>
+</CardGroup>

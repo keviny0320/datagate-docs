@@ -1,0 +1,36 @@
+---
+title: TypeScript Installation
+description: "Install the Datagate TypeScript SDK"
+---
+
+## Requirements
+
+- Node.js 18+ (uses built-in `fetch`)
+
+## Install
+
+```bash
+npm install datagate
+```
+
+## Dependencies
+
+**Zero runtime dependencies.** The SDK uses the built-in `fetch` API available in Node 18+.
+
+## Create a Client
+
+```typescript
+import { DatagateClient } from "datagate";
+
+// With API key (recommended)
+const client = new DatagateClient({ apiKey: "dg_live_..." });
+
+// With JWT access token
+const client = new DatagateClient({ accessToken: "eyJ..." });
+
+// With custom base URL (for local development)
+const client = new DatagateClient({
+  apiKey: "dg_live_...",
+  baseUrl: "http://localhost:8080",
+});
+```

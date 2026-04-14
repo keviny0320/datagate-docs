@@ -1,0 +1,93 @@
+---
+title: Datasets
+description: "Dataset discovery and management endpoints"
+---
+
+## Discover Datasets (Buyer)
+
+```
+GET /v1/datasets/discover
+```
+
+Returns all datasets visible to the buyer — public datasets and private datasets the buyer has been granted access to, deduplicated.
+
+**Response:**
+```json
+[
+  {
+    "id": "uuid",
+    "seller_id": "uuid",
+    "seller_name": "Jane Doe",
+    "name": "ML Research Papers",
+    "description": "Collection of ML papers from 2020-2024",
+    "price_per_chunk": "0.00100000",
+    "currency": "USD",
+    "visibility": "public",
+    "metadata_schema": [
+      {"name": "year", "type": "number", "description": "Publication year"},
+      {"name": "category", "type": "string", "description": "Paper category"}
+    ],
+    "queryable": true,
+    "subscribed": false,
+    "created_at": "2024-01-15T10:30:00Z",
+    "updated_at": "2024-01-15T10:30:00Z"
+  }
+]
+```
+
+**Key fields:**
+- `queryable` — `true` if the dataset has a connector wired (ready to query)
+- `subscribed` — `true` if the buyer has explicit access
+- `metadata_schema` — filter fields available for this dataset (may be `null`)
+
+## Get Dataset
+
+```
+GET /v1/datasets/{id}
+```
+
+Returns full dataset details.
+
+## Create Dataset (Seller)
+
+```
+POST /v1/datasets
+```
+
+**Request:**
+```json
+{
+  "name": "ML Research Papers",
+  "description": "Collection of ML papers from 2020-2024",
+  "price_per_chunk": "0.001",
+  "currency": "USD",
+  "visibility": "public",
+  "connector_id": "uuid",
+  "index_name": "ml-papers",
+  "embedding_model": "text-embedding-3-small",
+  "namespace": "v1",
+  "metadata_schema": [
+    {"name": "year", "type": "number", "description": "Publication year"}
+  ]
+}
+```
+
+`connector_id`, `index_name`, `embedding_model`, and `namespace` are optional. When `connector_id` is provided, `index_name` and `embedding_model` are required.
+
+## Grant/Revoke Access (Seller)
+
+```
+POST /v1/datasets/{id}/access
+```
+
+```json
+{"email": "buyer@example.com"}
+```
+
+```
+DELETE /v1/datasets/{id}/access
+```
+
+```json
+{"email": "buyer@example.com"}
+```

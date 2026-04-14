@@ -1,0 +1,18 @@
+---
+title: Claude Code
+description: "Set up Datagate MCP in Claude Code"
+---
+
+## Python
+
+```bash
+claude mcp add datagate -e DATAGATE_API_KEY=dg_live_your_key_here -- uvx datagate-mcp
+```
+
+## TypeScript
+
+```bash
+claude mcp add datagate -e DATAGATE_API_KEY=dg_live_your_key_here -- npx -y @datagate/mcp
+```
+
+That's it. The Datagate tools (`list_datasets` and `query`) are now available in your Claude Code sessions.

@@ -1,0 +1,135 @@
+---
+title: Python Usage
+description: "list_datasets() and query() — the two SDK methods"
+---
+
+## list_datasets()
+
+Discover all datasets visible to you — public datasets plus any private datasets you've been granted access to.
+
+```python
+datasets = await client.list_datasets()
+
+for ds in datasets:
+    print(f"{ds.name} (ID: {ds.id})")
+    print(f"  Price: {ds.price_per_chunk} {ds.currency}/chunk")
+    print(f"  Queryable: {ds.queryable}")
+    print(f"  Subscribed: {ds.subscribed}")
+```
+
+### Dataset Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | `str` | Dataset UUID |
+| `seller_name` | `str` | Name of the seller |
+| `name` | `str` | Dataset name |
+| `description` | `str` | What the dataset contains |
+| `price_per_chunk` | `str` | Price per result, 8 decimal places |
+| `visibility` | `str` | `"public"` or `"private"` |
+| `metadata_schema` | `list[dict] \| None` | Available filter fields |
+| `queryable` | `bool` | `True` if ready to query (connector wired) |
+| `subscribed` | `bool` | `True` if you have access |
+
+## query()
+
+Search across one or more datasets. Provide either `text` (natural language) or `vector` (pre-computed embedding).
+
+### Text query (recommended)
+
+```python
+response = await client.query(
+    text="machine learning transformers",
+    dataset_ids=["uuid-1", "uuid-2"],
+    top_k=10,
+)
+
+print(f"Query ID: {response.query_id}")
+for result in response.results:
+    print(f"[{result.score:.4f}] {result.metadata}")
+```
+
+### Pre-computed vector
+
+```python
+response = await client.query(
+    vector=[0.012, -0.034, 0.056, ...],
+    dataset_ids=["uuid-1"],
+    top_k=10,
+)
+```
+
+<Warning>
+All datasets must use the same embedding model when using pre-computed vectors. The server validates vector dimensions match.
+</Warning>
+
+### With metadata filters
+
+```python
+response = await client.query(
+    text="privacy regulations",
+    dataset_ids=["ds-aaa", "ds-bbb"],
+    filters={
+        "ds-aaa": {"year": {"$gte": 2023}},
+        "ds-bbb": {
+            "$and": [
+                {"category": {"$eq": "legal"}},
+                {"status": {"$in": ["published", "reviewed"]}},
+            ]
+        },
+    },
+)
+```
+
+See [Metadata Filters](/guides/metadata-filters) for the full filter syntax.
+
+### Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `query_id` | `str` | UUID for audit trail |
+| `results` | `list[QueryResult]` | Ranked results |
+| `warnings` | `list[str]` | Non-fatal issues (e.g., a dataset timed out) |
+
+Each `QueryResult`:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `dataset_id` | `str` | Which dataset this came from |
+| `id` | `str` | Vector ID in the seller's DB |
+| `score` | `float` | Relevance score (higher = better) |
+| `metadata` | `dict` | Key-value pairs from the seller's vector DB |
+| `embedding_model` | `str \| None` | Only present in multi-model queries |
+
+## Error Handling
+
+```python
+from datagate import (
+    DatagateClient,
+    DatagateError,
+    AuthenticationError,
+    InsufficientBalanceError,
+    ValidationError,
+    NotFoundError,
+)
+
+try:
+    response = await client.query(text="...", dataset_ids=["..."])
+except AuthenticationError:
+    print("Invalid API key")
+except InsufficientBalanceError as e:
+    print(f"Balance: {e.balance}, need: {e.estimated_cost}")
+except ValidationError as e:
+    print(f"Bad request: {e.message}")
+except DatagateError as e:
+    print(f"API error ({e.status_code}): {e.message}")
+```
+
+| Exception | Status | When |
+|-----------|--------|------|
+| `ValidationError` | 400 | Bad input |
+| `AuthenticationError` | 401 | Invalid credential |
+| `InsufficientBalanceError` | 402 | Balance too low |
+| `ForbiddenError` | 403 | Wrong role |
+| `NotFoundError` | 404 | Resource not found |
+| `ServerError` | 500 | Server error |

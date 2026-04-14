@@ -1,0 +1,51 @@
+---
+title: Core Concepts
+description: "Datasets, connectors, pricing, and how queries work"
+---
+
+## Datasets
+
+A **dataset** is a collection of vector-indexed content published by a seller. Each dataset has:
+
+- **Name and description** — what the data contains
+- **Price per chunk** — cost per result returned (e.g., `$0.001`)
+- **Visibility** — `public` (anyone can query) or `private` (requires seller-granted access)
+- **Metadata schema** — describes what fields are available for filtering
+- **Embedding model** — which model was used to vectorize the data (e.g., `text-embedding-3-small`)
+
+## Connectors
+
+Connectors are seller-side credentials linking a dataset to a vector database. Supported providers:
+
+| Provider | Auth |
+|----------|------|
+| Pinecone | API key |
+| Qdrant | API key |
+| Weaviate | API key |
+| Milvus (Zilliz Cloud) | Username + password |
+
+As a buyer, you never interact with connectors directly. The seller configures them, and Datagate routes queries to the right vector DB.
+
+## How Queries Work
+
+When you call `query()`:
+
+1. **Access check** — Datagate verifies you can access the requested datasets (public = always, private = need access grant)
+2. **Balance check** — estimates max cost (topK × price_per_chunk per dataset) and checks your balance
+3. **Embedding** — converts your text query into vector(s) using each dataset's embedding model
+4. **Fan-out** — searches each dataset's vector DB in parallel
+5. **Merge & rank** — combines results across datasets, ranked by relevance score
+6. **Billing** — charges per chunk actually returned (not estimated cost)
+
+### Single-model vs multi-model
+
+- **Same embedding model** across all datasets → embed once, merge by raw similarity score
+- **Different embedding models** → embed per-model in parallel, merge using Reciprocal Rank Fusion (RRF) since raw scores from different models aren't comparable
+
+You don't need to handle this — it's automatic. Just send text and dataset IDs.
+
+## Pricing
+
+- **Per-chunk billing**: you pay `price_per_chunk` for each result returned, plus a small platform fee
+- **Deposits**: add funds via Stripe Checkout
+- **Auto-deposit**: configure a threshold — when your balance drops below it, auto-refill from your saved payment method

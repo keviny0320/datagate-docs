@@ -1,0 +1,124 @@
+---
+title: Quickstart
+description: "Your first Datagate query in under 5 minutes"
+---
+
+## 1. Get your API key
+
+Sign up at [platform.datagate.dev](https://platform.datagate.dev) and generate an API key from the dashboard. Your key starts with `dg_live_`.
+
+## 2. Install the SDK
+
+<CodeGroup>
+
+```bash Python
+pip install datagate
+```
+
+```bash TypeScript
+npm install datagate
+```
+
+</CodeGroup>
+
+## 3. Discover datasets
+
+<CodeGroup>
+
+```python Python
+from datagate import DatagateClient
+
+client = DatagateClient(api_key="dg_live_...")
+
+datasets = await client.list_datasets()
+for ds in datasets:
+    print(f"{ds.name} — {ds.price_per_chunk} {ds.currency}/chunk")
+    if ds.metadata_schema:
+        for field in ds.metadata_schema:
+            print(f"  Filter: {field['name']} ({field['type']})")
+```
+
+```typescript TypeScript
+import { DatagateClient } from "datagate";
+
+const client = new DatagateClient({ apiKey: "dg_live_..." });
+
+const datasets = await client.listDatasets();
+for (const ds of datasets) {
+  console.log(`${ds.name} — ${ds.price_per_chunk} ${ds.currency}/chunk`);
+  if (ds.metadata_schema) {
+    for (const field of ds.metadata_schema) {
+      console.log(`  Filter: ${field.name} (${field.type})`);
+    }
+  }
+}
+```
+
+</CodeGroup>
+
+## 4. Query
+
+<CodeGroup>
+
+```python Python
+response = await client.query(
+    text="machine learning transformers",
+    dataset_ids=[ds.id for ds in datasets if ds.queryable],
+    top_k=5,
+)
+
+for result in response.results:
+    print(f"[{result.score:.4f}] {result.metadata}")
+
+await client.close()
+```
+
+```typescript TypeScript
+const response = await client.query({
+  text: "machine learning transformers",
+  datasetIds: datasets.filter((ds) => ds.queryable).map((ds) => ds.id),
+  topK: 5,
+});
+
+for (const result of response.results) {
+  console.log(`[${result.score.toFixed(4)}]`, result.metadata);
+}
+```
+
+</CodeGroup>
+
+## 5. Add filters (optional)
+
+Use `metadata_schema` from step 3 to filter results per dataset:
+
+<CodeGroup>
+
+```python Python
+response = await client.query(
+    text="privacy regulations",
+    dataset_ids=["ds-aaa", "ds-bbb"],
+    filters={
+        "ds-aaa": {"year": {"$gte": 2023}},
+        "ds-bbb": {"category": {"$eq": "legal"}},
+    },
+)
+```
+
+```typescript TypeScript
+const response = await client.query({
+  text: "privacy regulations",
+  datasetIds: ["ds-aaa", "ds-bbb"],
+  filters: {
+    "ds-aaa": { year: { $gte: 2023 } },
+    "ds-bbb": { category: { $eq: "legal" } },
+  },
+});
+```
+
+</CodeGroup>
+
+## Next steps
+
+- [Authentication](/authentication) — API keys and JWT tokens
+- [Metadata Filters](/guides/metadata-filters) — full filter syntax reference
+- [MCP Integration](/mcp/overview) — connect Datagate to Claude Desktop

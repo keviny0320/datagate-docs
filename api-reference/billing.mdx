@@ -1,0 +1,126 @@
+---
+title: Billing
+description: "Balance, deposits, and withdrawals"
+---
+
+## Buyer Balance
+
+```
+GET /v1/billing/buyer-balance
+```
+
+```json
+{
+  "balance": "24.50000000",
+  "total_deposited": "100.00000000",
+  "total_spent": "75.50000000",
+  "currency": "USD"
+}
+```
+
+All monetary values are strings with 8 decimal places.
+
+## Deposit
+
+```
+POST /v1/billing/deposit
+```
+
+Creates a Stripe Checkout session. Redirect the user to `checkout_url`.
+
+**Request:**
+```json
+{
+  "amount": "25.00",
+  "success_url": "https://yourapp.com/success",
+  "cancel_url": "https://yourapp.com/cancel"
+}
+```
+
+**Response:**
+```json
+{
+  "checkout_url": "https://checkout.stripe.com/...",
+  "session_id": "cs_..."
+}
+```
+
+## Deposit History
+
+```
+GET /v1/billing/deposits?limit=10&cursor=...
+```
+
+```json
+{
+  "deposits": [
+    {
+      "id": "uuid",
+      "amount": "25.00000000",
+      "currency": "USD",
+      "receipt_url": "https://receipt.stripe.com/...",
+      "created_at": "2024-01-15T10:30:00Z"
+    }
+  ],
+  "next_cursor": "...",
+  "has_more": false
+}
+```
+
+## Auto-Deposit
+
+### Get Config
+
+```
+GET /v1/billing/auto-deposit
+```
+
+```json
+{
+  "enabled": true,
+  "threshold": "5.00000000",
+  "amount": "25.00000000"
+}
+```
+
+### Update Config
+
+```
+PUT /v1/billing/auto-deposit
+```
+
+```json
+{
+  "enabled": true,
+  "threshold": "5.00",
+  "amount": "25.00"
+}
+```
+
+## Seller Balance
+
+```
+GET /v1/billing/seller-balance
+```
+
+```json
+{
+  "balance": "150.00000000",
+  "total_earned": "200.00000000",
+  "total_withdrawn": "50.00000000",
+  "currency": "USD"
+}
+```
+
+## Withdraw (Seller)
+
+```
+POST /v1/billing/withdraw
+```
+
+**Request:**
+```json
+{"amount": "50.00"}
+```
+
+Minimum $1.00. Requires Stripe Connect onboarding.

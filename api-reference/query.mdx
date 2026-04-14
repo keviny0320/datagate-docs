@@ -1,0 +1,70 @@
+---
+title: Query
+description: "Search across datasets"
+---
+
+## Query Datasets
+
+```
+POST /v1/query
+```
+
+**Request:**
+```json
+{
+  "query": "machine learning transformers",
+  "dataset_ids": ["uuid-1", "uuid-2"],
+  "top_k": 10,
+  "filters": {
+    "uuid-1": {"year": {"$gte": 2023}},
+    "uuid-2": {"category": {"$eq": "research"}}
+  }
+}
+```
+
+**Fields:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `query` | string | One of query/vector | Natural language search text |
+| `vector` | number[] | One of query/vector | Pre-computed embedding |
+| `dataset_ids` | string[] | Yes | Dataset IDs to search |
+| `top_k` | number | No (default 10) | Max results (max 100) |
+| `filters` | object | No | Per-dataset metadata filters |
+
+**Response:**
+```json
+{
+  "query_id": "uuid",
+  "results": [
+    {
+      "dataset_id": "uuid-1",
+      "id": "vec-123",
+      "score": 0.95,
+      "metadata": {
+        "title": "Attention Is All You Need",
+        "year": 2017,
+        "text": "We propose a new simple network architecture..."
+      },
+      "embedding_model": "text-embedding-3-small"
+    }
+  ],
+  "warnings": []
+}
+```
+
+**Result fields:**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `dataset_id` | string | Source dataset |
+| `id` | string | Vector ID in the seller's DB |
+| `score` | number | Relevance score (higher = better) |
+| `metadata` | object | Key-value pairs from the seller's vector DB |
+| `embedding_model` | string | Only in multi-model queries |
+
+**Status codes:**
+- `200` — success
+- `400` — validation error (bad filters, missing fields, dimension mismatch)
+- `402` — insufficient balance (includes `balance` and `estimated_cost`)
+- `403` — no access to one or more datasets
