@@ -14,12 +14,12 @@
   "topbarLinks": [
     {
       "name": "Dashboard",
-      "url": "https://platform.datagate.dev"
+      "url": "https://platform.getdatagate.com"
     }
   ],
   "topbarCtaButton": {
     "name": "Get API Key",
-    "url": "https://platform.datagate.dev"
+    "url": "https://platform.getdatagate.com"
   },
   "tabs": [
     {
