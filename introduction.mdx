@@ -25,6 +25,22 @@ Your Agent → POST /v1/query → Datagate → Fan-out to seller vector DBs → 
 2. **Query** with `query()` — send natural language text, get ranked results with metadata
 3. **Pay per chunk** — each result chunk is billed at the dataset's price (typically fractions of a cent)
 
+## Two ways to integrate
+
+**SDK** — use Datagate directly in your code. Returns typed objects, full control over error handling.
+
+```bash
+pip install datagate     # Python
+npm install datagate     # TypeScript
+```
+
+**MCP server** — connects Datagate to Claude Desktop, Claude Code, or any MCP-compatible agent. No code needed — the AI agent discovers and calls the tools automatically. The MCP server uses the SDK under the hood.
+
+```bash
+pip install datagate-mcp     # Python
+npm install @datagate/mcp    # TypeScript
+```
+
 ## Get started
 
 <CardGroup cols={2}>

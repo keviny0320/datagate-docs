@@ -15,6 +15,22 @@ description: "Connect Datagate to AI agents via Model Context Protocol"
 | Custom Python/TypeScript application | **SDK** |
 | Building your own agent framework | **SDK** (or MCP if your framework supports it) |
 
+## How the packages relate
+
+```
+datagate          ← SDK (standalone HTTP client)
+   ↑ depends on
+datagate-mcp      ← MCP server (thin wrapper around the SDK)
+```
+
+The **SDK** (`datagate`) is the foundation — a Python/TypeScript client that calls the Datagate API directly. It returns typed objects and gives you full control.
+
+The **MCP server** (`datagate-mcp`) is a wrapper that imports the SDK and exposes its methods as MCP tools. When you install `datagate-mcp`, the SDK is automatically installed as a dependency.
+
+You can use either one independently:
+- **SDK only** (`pip install datagate`) — for custom apps and agents where you want typed responses
+- **MCP only** (`pip install datagate-mcp`) — for Claude Desktop, Claude Code, or MCP-compatible frameworks (SDK comes along automatically)
+
 ## Available Packages
 
 | Package | Language | Install | Run |
