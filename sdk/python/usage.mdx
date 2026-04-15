@@ -25,9 +25,9 @@ for ds in datasets:
 | `seller_name` | `str` | Name of the seller |
 | `name` | `str` | Dataset name |
 | `description` | `str` | What the dataset contains |
-| `price_per_chunk` | `str` | Price per result, 8 decimal places |
+| `price_per_chunk` | `str` | Price per result, 8 decimal places (e.g. `"0.00100000"`) |
 | `visibility` | `str` | `"public"` or `"private"` |
-| `metadata_schema` | `list[dict] \| None` | Available filter fields |
+| `metadata_schema` | `list[dict] \| None` | Available filter fields — each dict has `name` (str), `type` (str), and optional `description` (str) |
 | `queryable` | `bool` | `True` if ready to query (connector wired) |
 | `subscribed` | `bool` | `True` if you have access |
 

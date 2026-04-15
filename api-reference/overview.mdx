@@ -25,19 +25,34 @@ All request and response bodies are JSON:
 Content-Type: application/json
 ```
 
+## Common Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/v1/users/me` | Get profile |
+| `PUT` | `/v1/users/me` | Update profile |
+| `POST` | `/v1/auth/api-keys` | Generate / rotate API key |
+| `GET` | `/v1/auth/api-keys` | Get current key suffix |
+| `DELETE` | `/v1/auth/api-keys` | Revoke API key |
+
 ## Buyer Endpoints
 
 | Method | Path | Description |
 |--------|------|-------------|
 | `GET` | `/v1/datasets/discover` | Discover all visible datasets |
+| `GET` | `/v1/datasets/subscribed` | List subscribed datasets |
 | `GET` | `/v1/datasets/{id}` | Get dataset detail |
+| `POST` | `/v1/marketplace/{id}/subscribe` | Subscribe to dataset |
+| `DELETE` | `/v1/marketplace/{id}/subscribe` | Unsubscribe from dataset |
 | `POST` | `/v1/query` | Query across datasets |
+| `POST` | `/v1/synthesize` | Query + LLM synthesis |
 | `GET` | `/v1/billing/buyer-balance` | Get balance |
 | `POST` | `/v1/billing/deposit` | Create deposit checkout |
 | `GET` | `/v1/billing/deposits` | Deposit history |
 | `GET` | `/v1/billing/auto-deposit` | Auto-deposit config |
 | `PUT` | `/v1/billing/auto-deposit` | Configure auto-deposit |
-| `GET` | `/v1/users/me` | Get profile |
+| `GET` | `/v1/billing/payment-info` | Saved payment methods |
+| `POST` | `/v1/billing/portal` | Stripe billing portal |
 
 ## Seller Endpoints
 
@@ -45,6 +60,7 @@ Content-Type: application/json
 |--------|------|-------------|
 | `POST` | `/v1/connectors` | Create connector |
 | `GET` | `/v1/connectors` | List connectors |
+| `GET` | `/v1/connectors/{id}` | Get connector detail |
 | `PUT` | `/v1/connectors/{id}` | Update connector |
 | `DELETE` | `/v1/connectors/{id}` | Delete connector |
 | `POST` | `/v1/datasets` | Create dataset |
@@ -52,5 +68,13 @@ Content-Type: application/json
 | `PUT` | `/v1/datasets/{id}` | Update dataset |
 | `POST` | `/v1/datasets/{id}/access` | Grant buyer access |
 | `DELETE` | `/v1/datasets/{id}/access` | Revoke buyer access |
+| `GET` | `/v1/datasets/{id}/buyers` | List buyers who queried |
 | `GET` | `/v1/royalties/me/datasets` | Per-dataset earnings |
+| `GET` | `/v1/royalties/me/earnings` | Earnings time series |
+| `GET` | `/v1/royalties/me/buyers` | Per-buyer earnings |
+| `POST` | `/v1/billing/connect` | Stripe Connect onboarding |
+| `GET` | `/v1/billing/connect/status` | Onboarding status |
+| `POST` | `/v1/billing/connect/dashboard` | Stripe dashboard link |
 | `POST` | `/v1/billing/withdraw` | Withdraw earnings |
+| `GET` | `/v1/billing/withdrawals` | Withdrawal history |
+| `GET` | `/v1/billing/seller-balance` | Seller balance |
